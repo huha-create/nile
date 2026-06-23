@@ -6,7 +6,118 @@
 #support-url: https://wa.me/79639864491
 #profile-web-page-url: https://wa.me/79639864491
 happ://routing/bypass-lan-and-cn?name=Bypass+LAN+and+CN
+mixed-port: 7890
+allow-lan: true
+mode: rule
+log-level: info
 
+proxies:
+  - name: "EU-16"
+    type: vless
+    server: rezerv16.yunus.guru
+    port: 443
+    uuid: 861fd825-3828-4bc6-a48e-8295f357b6c7
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: rezerv16.yunus.guru
+    reality-opts:
+      public-key: WeeUf6jO26pDN580rmz6kmZ5Y-S-eF76iWOMYK1HvDg
+      short-id: e6f15c51340a6691
+    client-fingerprint: firefox
+
+  - name: "EU-17"
+    type: vless
+    server: rezerv17.yunus.guru
+    port: 443
+    uuid: 861fd825-3828-4bc6-a48e-8295f357b6c7
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: rezerv17.yunus.guru
+    reality-opts:
+      public-key: _5KQWficxpTFTYpHG-PpKpN99XL8H0vwOyg2XBMhVn8
+      short-id: ef3d5a5ce1127092
+    client-fingerprint: firefox
+
+  - name: "EU-18"
+    type: vless
+    server: rezerv18.yunus.guru
+    port: 443
+    uuid: 861fd825-3828-4bc6-a48e-8295f357b6c7
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: rezerv18.yunus.guru
+    reality-opts:
+      public-key: jLa4bn_ZuTamBSUdxQCJJI1seX1TvPQDKB5u7rzbcG4
+      short-id: ce92dfd666224477
+    client-fingerprint: firefox
+
+  - name: "EU-19"
+    type: vless
+    server: rezerv19.yunus.guru
+    port: 443
+    uuid: 861fd825-3828-4bc6-a48e-8295f357b6c7
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: rezerv19.yunus.guru
+    reality-opts:
+      public-key: Lt6X7qMkqASgQr2ErbaUbowSn2ylRuON8BsOjmZv6Qw
+      short-id: b197d7f830dc8062
+    client-fingerprint: firefox
+
+  - name: "EU-20"
+    type: vless
+    server: rezerv20.yunus.guru
+    port: 443
+    uuid: 861fd825-3828-4bc6-a48e-8295f357b6c7
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: rezerv20.yunus.guru
+    reality-opts:
+      public-key: GF61aR_em1Xb3bNpwaO86PMEsAi4tuNfinnTDnrC4CE
+      short-id: 664d93f83ca49830
+    client-fingerprint: firefox
+
+  - name: "EU-21"
+    type: vless
+    server: rezerv21.yunus.guru
+    port: 443
+    uuid: 861fd825-3828-4bc6-a48e-8295f357b6c7
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: rezerv21.yunus.guru
+    reality-opts:
+      public-key: Qsx1iAU8A1meJ2Pz8QbEcX1iGckyw4f6-mxZ3ZyJ8HI
+      short-id: e2b15b73af31a6a4
+    client-fingerprint: firefox
+
+proxy-groups:
+  - name: "⚡ Автовыбор"
+    type: url-test
+    url: https://cp.cloudflare.com/generate_204
+    interval: 300
+    tolerance: 50
+    proxies:
+      - EU-16
+      - EU-17
+      - EU-18
+      - EU-19
+      - EU-20
+      - EU-21
+
+rules:
+  - MATCH,⚡ Автовыбор
 
 vless://861fd825-3828-4bc6-a48e-8295f357b6c7@158.160.191.91:443?security=reality&encryption=none&echfq=none&pbk=6QIHdF1dvSK8mDPOeWXvGIqJmZ2ySq5fyc7N15h1WFE&headerType=none&fp=firefox&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=rezerv8.yunus.guru&sid=34256b39b4ebb864#%F0%9F%87%B3%F0%9F%87%B1++%D0%90%D0%BD%D1%82%D0%B8%D0%B7%D0%B0%D0%B3%D0%BB%D1%83%D1%88%D0%BA%D0%B0+%F0%9F%9B%A0%EF%B8%8F?serverDescription=0KLQtdGB0YIg0LrQvtC90YTQuNCz0YPRgNCw0YbQuNC4
 
