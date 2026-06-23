@@ -1,1 +1,10 @@
+port: 7890
 
+proxy-groups:
+  - name: "⚡ Автовыбор"
+    type: select
+    proxies:
+      - DIRECT
+
+rules:
+  - MATCH,DIRECT
