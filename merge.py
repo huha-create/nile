@@ -1,66 +1,52 @@
-import json, re, urllib.parse
+import json, urllib.parse, re, base64
 
-# Читаем README.md и ищем ссылку
+# 1. Читаем твой ключ из README.md
 with open('README.md', 'r', encoding='utf-8') as f:
-    content = f.read()
+    my_links = re.findall(r'vless://\S+', f.read())
 
-match = re.search(r'vless://\S+', content)
-if not match:
-    print("Ссылка vless:// не найдена")
-    exit(0)
+# 2. Вытаскиваем сервер друга из avto.json и конвертируем в ссылку
+friend_links = []
+try:
+    with open('avto.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        
+    for out in data.get("outbounds", []):
+        if out.get("protocol") == "vless":
+            tag = out.get("tag", "Авто Выбор")
+            try:
+                vnext = out.get("settings", {}).get("vnext", [{}])[0]
+                addr = vnext.get("address", "")
+                port = vnext.get("port", 443)
+                uuid = vnext.get("users", [{}])[0].get("id", "")
+                flow = vnext.get("users", [{}])[0].get("flow", "")
+                
+                stream = out.get("streamSettings", {})
+                params = {
+                    "type": stream.get("network", "tcp"),
+                    "security": stream.get("security", "none")
+                }
+                if flow: params["flow"] = flow
+                
+                if params["security"] == "reality":
+                    rs = stream.get("realitySettings", {})
+                    params.update({
+                        "pbk": rs.get("publicKey", ""),
+                        "fp": rs.get("fingerprint", ""),
+                        "sni": rs.get("serverName", ""),
+                        "sid": rs.get("shortId", ""),
+                        "spx": rs.get("spiderX", "/")
+                    })
+                
+                query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
+                friend_links.append(f"vless://{uuid}@{addr}:{port}?{query}#{urllib.parse.quote(tag)}")
+            except Exception:
+                continue
+except Exception as e:
+    print("Ошибка:", e)
 
-# Разбираем ссылку на параметры
-url = urllib.parse.urlparse(match.group(0))
-q = urllib.parse.parse_qs(url.query)
-get_q = lambda k: q.get(k, [''])[0]
+# 3. Объединяем и пакуем в формат Base64 (стандарт для подписок)
+all_links = my_links + friend_links
+b64_text = base64.b64encode("\n".join(all_links).encode('utf-8')).decode('utf-8')
 
-# Формируем JSON структуру
-outbound = {
-    "tag": urllib.parse.unquote(url.fragment) if url.fragment else "Мой сервер",
-    "protocol": "vless",
-    "settings": {
-        "vnext": [{
-            "address": url.hostname,
-            "port": int(url.port) if url.port else 443,
-            "users": [{"id": url.username, "encryption": get_q("encryption") or "none"}]
-        }]
-    },
-    "streamSettings": {
-        "network": get_q("type") or "tcp",
-        "security": get_q("security") or "none"
-    }
-}
-
-if get_q("flow"): outbound["settings"]["vnext"][0]["users"][0]["flow"] = get_q("flow")
-
-if outbound["streamSettings"]["security"] == "reality":
-    outbound["streamSettings"]["realitySettings"] = {
-        "publicKey": get_q("pbk"),
-        "fingerprint": get_q("fp"),
-        "serverName": get_q("sni"),
-        "shortId": get_q("sid"),
-        "spiderX": get_q("spx") or "/"
-    }
-elif outbound["streamSettings"]["security"] == "tls":
-    outbound["streamSettings"]["tlsSettings"] = {
-        "serverName": get_q("sni"),
-        "fingerprint": get_q("fp")
-    }
-
-if outbound["streamSettings"]["network"] == "ws":
-    outbound["streamSettings"]["wsSettings"] = {
-        "path": get_q("path") or "/",
-        "headers": {"Host": get_q("host") or get_q("sni")}
-    }
-
-# Открываем файл друга
-with open('avto.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
-
-# Добавляем твой сервер к серверу друга
-if "outbounds" not in data: data["outbounds"] = []
-data["outbounds"].append(outbound)
-
-# Сохраняем в новый файл подписки
-with open('sub.json', 'w', encoding='utf-8') as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
+with open('sub.txt', 'w', encoding='utf-8') as f:
+    f.write(b64_text)
