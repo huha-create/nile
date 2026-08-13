@@ -7,7 +7,8 @@
       "timeout": "3s"
     },
     "subjectSelector": [
-      "proxy"
+      "proxy",
+      "🇷🇺 Белые списки №1"
     ]
   },
   "dns": {
@@ -820,7 +821,7 @@
       "tag": "block"
     },
     {
-      "tag": "🇳🇱 Нидерланды",
+      "tag": "🇷🇺 Белые списки №1",
       "protocol": "vless",
       "settings": {
         "vnext": [
