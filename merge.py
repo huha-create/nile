@@ -1,19 +1,16 @@
 import json, re, urllib.parse
 
+# 1. Читаем твой VLESS-ключ
 with open('README.md', 'r', encoding='utf-8') as f:
-    content = f.read()
-
-match = re.search(r'vless://\S+', content)
+    match = re.search(r'vless://\S+', f.read())
 if not match: exit(0)
 
 url = urllib.parse.urlparse(match.group(0))
 q = urllib.parse.parse_qs(url.query)
 get_q = lambda k: q.get(k, [''])[0]
 
-my_tag = "🇷🇺 Белые списки №1"
-
 my_outbound = {
-    "tag": my_tag,
+    "tag": "proxy",
     "protocol": "vless",
     "settings": {
         "vnext": [{
@@ -28,7 +25,6 @@ my_outbound = {
     }
 }
 if get_q("flow"): my_outbound["settings"]["vnext"][0]["users"][0]["flow"] = get_q("flow")
-
 if my_outbound["streamSettings"]["security"] == "reality":
     my_outbound["streamSettings"]["realitySettings"] = {
         "publicKey": get_q("pbk"), "fingerprint": get_q("fp"), "serverName": get_q("sni"),
@@ -36,23 +32,28 @@ if my_outbound["streamSettings"]["security"] == "reality":
     }
 elif my_outbound["streamSettings"]["security"] == "tls":
     my_outbound["streamSettings"]["tlsSettings"] = {"serverName": get_q("sni"), "fingerprint": get_q("fp")}
-
 if my_outbound["streamSettings"]["network"] == "ws":
     my_outbound["streamSettings"]["wsSettings"] = {"path": get_q("path") or "/", "headers": {"Host": get_q("host") or get_q("sni")}}
 
+# 2. Создаем твой личный независимый профиль
+my_profile = {
+    "remarks": "🇷🇺 Белые списки №1",
+    "outbounds": [
+        my_outbound,
+        {"protocol": "freedom", "tag": "direct"},
+        {"protocol": "blackhole", "tag": "block"}
+    ]
+}
+
+# 3. Открываем профиль друга (Автовыбор)
 with open('avto.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
+    friend_profile = json.load(f)
+    friend_profile["remarks"] = "⚡ Авто Выбор"
 
-if "outbounds" not in data: data["outbounds"] = []
-data["outbounds"].append(my_outbound)
+# 4. Лазейка Xray: объединяем профили в JSON Array (Массив)
+# Германские (Автовыбор) ставим первыми, российский — последним
+final_array = [friend_profile, my_profile]
 
-# Глубокая интеграция твоего сервера в механизм автовыбора
-if "burstObservatory" in data and "subjectSelector" in data["burstObservatory"]:
-    if my_tag not in data["burstObservatory"]["subjectSelector"]:
-        data["burstObservatory"]["subjectSelector"].append(my_tag)
-elif "observatory" in data and "subjectSelector" in data["observatory"]:
-    if my_tag not in data["observatory"]["subjectSelector"]:
-        data["observatory"]["subjectSelector"].append(my_tag)
-
+# 5. Сохраняем итоговый массив
 with open('sub.json', 'w', encoding='utf-8') as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
+    json.dump(final_array, f, indent=2, ensure_ascii=False)
