@@ -7,4 +7,4 @@
 #profile-web-page-url: https://wa.me/79639864491
 happ://routing/bypass-lan-and-cn?name=Bypass+LAN+and+CN
 
-vless://0ff0f0ed-b59e-464d-bb41-7f2f353e13ce@195.63.163.190:8090?type=ws&security=none&encryption=none&path=%2Fws&host=rukr.speedload.ru#%F0%9F%87%B3%F0%9F%87%B1%20%D0%9D%D0%B8%D0%B4%D0%B5%D1%80%D0%BB%D0%B0%D0%BD%D0%B4%D1%8B
+vless://0ff0f0ed-b59e-464d-bb41-7f2f353e13ce@195.63.163.190:8090?type=ws&security=none&encryption=none&path=%2Fws&host=rukr.speedload.ru#белый Шрек 
