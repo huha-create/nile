@@ -27,5 +27,5 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add sub.json
-          git commit -m "Интегрирован автовыбор" || echo "Нет изменений"
+          git commit -m "Интегрирован JSON Array для подписки" || echo "Нет изменений"
           git push
