@@ -1,52 +1,58 @@
-import json, urllib.parse, re, base64
+import json, re, urllib.parse
 
-# 1. Читаем твой ключ из README.md
 with open('README.md', 'r', encoding='utf-8') as f:
-    my_links = re.findall(r'vless://\S+', f.read())
+    content = f.read()
 
-# 2. Вытаскиваем сервер друга из avto.json и конвертируем в ссылку
-friend_links = []
-try:
-    with open('avto.json', 'r', encoding='utf-8') as f:
-        data = json.load(f)
-        
-    for out in data.get("outbounds", []):
-        if out.get("protocol") == "vless":
-            tag = out.get("tag", "Авто Выбор")
-            try:
-                vnext = out.get("settings", {}).get("vnext", [{}])[0]
-                addr = vnext.get("address", "")
-                port = vnext.get("port", 443)
-                uuid = vnext.get("users", [{}])[0].get("id", "")
-                flow = vnext.get("users", [{}])[0].get("flow", "")
-                
-                stream = out.get("streamSettings", {})
-                params = {
-                    "type": stream.get("network", "tcp"),
-                    "security": stream.get("security", "none")
-                }
-                if flow: params["flow"] = flow
-                
-                if params["security"] == "reality":
-                    rs = stream.get("realitySettings", {})
-                    params.update({
-                        "pbk": rs.get("publicKey", ""),
-                        "fp": rs.get("fingerprint", ""),
-                        "sni": rs.get("serverName", ""),
-                        "sid": rs.get("shortId", ""),
-                        "spx": rs.get("spiderX", "/")
-                    })
-                
-                query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
-                friend_links.append(f"vless://{uuid}@{addr}:{port}?{query}#{urllib.parse.quote(tag)}")
-            except Exception:
-                continue
-except Exception as e:
-    print("Ошибка:", e)
+match = re.search(r'vless://\S+', content)
+if not match: exit(0)
 
-# 3. Объединяем и пакуем в формат Base64 (стандарт для подписок)
-all_links = my_links + friend_links
-b64_text = base64.b64encode("\n".join(all_links).encode('utf-8')).decode('utf-8')
+url = urllib.parse.urlparse(match.group(0))
+q = urllib.parse.parse_qs(url.query)
+get_q = lambda k: q.get(k, [''])[0]
 
-with open('sub.txt', 'w', encoding='utf-8') as f:
-    f.write(b64_text)
+my_tag = "🇷🇺 Белые списки №1"
+
+my_outbound = {
+    "tag": my_tag,
+    "protocol": "vless",
+    "settings": {
+        "vnext": [{
+            "address": url.hostname,
+            "port": int(url.port) if url.port else 443,
+            "users": [{"id": url.username, "encryption": get_q("encryption") or "none"}]
+        }]
+    },
+    "streamSettings": {
+        "network": get_q("type") or "tcp",
+        "security": get_q("security") or "none"
+    }
+}
+if get_q("flow"): my_outbound["settings"]["vnext"][0]["users"][0]["flow"] = get_q("flow")
+
+if my_outbound["streamSettings"]["security"] == "reality":
+    my_outbound["streamSettings"]["realitySettings"] = {
+        "publicKey": get_q("pbk"), "fingerprint": get_q("fp"), "serverName": get_q("sni"),
+        "shortId": get_q("sid"), "spiderX": get_q("spx") or "/"
+    }
+elif my_outbound["streamSettings"]["security"] == "tls":
+    my_outbound["streamSettings"]["tlsSettings"] = {"serverName": get_q("sni"), "fingerprint": get_q("fp")}
+
+if my_outbound["streamSettings"]["network"] == "ws":
+    my_outbound["streamSettings"]["wsSettings"] = {"path": get_q("path") or "/", "headers": {"Host": get_q("host") or get_q("sni")}}
+
+with open('avto.json', 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+if "outbounds" not in data: data["outbounds"] = []
+data["outbounds"].append(my_outbound)
+
+# Глубокая интеграция твоего сервера в механизм автовыбора
+if "burstObservatory" in data and "subjectSelector" in data["burstObservatory"]:
+    if my_tag not in data["burstObservatory"]["subjectSelector"]:
+        data["burstObservatory"]["subjectSelector"].append(my_tag)
+elif "observatory" in data and "subjectSelector" in data["observatory"]:
+    if my_tag not in data["observatory"]["subjectSelector"]:
+        data["observatory"]["subjectSelector"].append(my_tag)
+
+with open('sub.json', 'w', encoding='utf-8') as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
